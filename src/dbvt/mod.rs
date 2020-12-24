@@ -593,14 +593,19 @@ where
         self.updated_list.clear();
     }
 
+    /// Forwards to `tick_with_rng` using `rand::thread_rng`.
+    pub fn tick(&mut self) {
+        self.tick_with_rng(&mut rand::thread_rng());
+    }
+
     /// Utility method to perform updates and refitting. Should be called once per frame.
     ///
     /// Will in turn call [`update`](struct.DynamicBoundingVolumeTree.html#method.update), followed
     /// by [`do_refit`](struct.DynamicBoundingVolumeTree.html#method.do_refit).
     ///
-    pub fn tick(&mut self) {
+    pub fn tick_with_rng<R: Rng>(&mut self, rng: &mut R) {
         self.update();
-        self.do_refit();
+        self.do_refit_with_rng(rng);
     }
 
     /// Insert a value into the tree.
@@ -833,16 +838,21 @@ where
         Some(value)
     }
 
+    /// Forwards to `do_refit_with_rng` using `rand::thread_rng`.
+    pub fn do_refit(&mut self) {
+        self.do_refit_with_rng(&mut rand::thread_rng());
+    }
+
     /// Go through the list of nodes marked for refitting, update their bounds/heights and check if
     /// any of them need to be rotated to new locations.
     ///
     /// This method have worst case complexity O(m * log^2 n), where m is the number of nodes in the
     /// refit list.
     ///
-    pub fn do_refit(&mut self) {
+    pub fn do_refit_with_rng<R: Rng>(&mut self, rng: &mut R) {
         while !self.refit_nodes.is_empty() {
             let (_, node_index) = self.refit_nodes.remove(0);
-            self.refit_node(node_index);
+            self.refit_node(rng, node_index);
         }
     }
 
@@ -894,7 +904,7 @@ where
     /// will update the bound/height of itself and any other rotated nodes, and also mark its parent
     /// for refitting.
     ///
-    fn refit_node(&mut self, node_index: usize) {
+    fn refit_node<R: Rng>(&mut self, rng: &mut R, node_index: usize) {
         if let Some((parent_index, height)) = self.recalculate_node(node_index) {
             if parent_index != 0 {
                 self.mark_for_refit(parent_index, height + 1);
@@ -903,7 +913,7 @@ where
 
         // Only do rotations occasionally, as they are fairly expensive, and shouldn't be overused.
         // For most scenarios, the majority of shapes will not have moved, so this is fine.
-        if rand::thread_rng().gen_range(0..100) < PERFORM_ROTATION_PERCENTAGE {
+        if rng.gen_range(0..100) < PERFORM_ROTATION_PERCENTAGE {
             self.rotate(node_index);
         }
     }
