@@ -32,7 +32,7 @@ keywords = ["gamedev", "cgmath", "collision"]
 name = "collision"
 
 [dependencies]
-rand = "0.6"
+rand = "0.8"
 approx = "0.3" # Only for the macros; for all other instances use the re-exported cgmath ones.
 cgmath = "0.17"
 serde = { version = "1.0", optional = true, features = ["derive"] }
