@@ -1,9 +1,9 @@
 use std::marker;
 use std::ops::Neg;
 
-use cgmath::{BaseFloat, Point2, Vector2};
-use cgmath::prelude::*;
 use approx::ulps_eq;
+use cgmath::prelude::*;
+use cgmath::{BaseFloat, Point2, Vector2};
 
 use super::{Simplex, SimplexProcessor};
 use crate::primitive::util::{get_closest_point_on_edge, triple_product};
